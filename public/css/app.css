@@ -1,11 +1,39 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: black;
+    color: white;
+}
 
-.yes, .no, .maybe {
+#page {
+    max-width: 500px;
+    margin: auto;
+}
+
+h1 {
+    font-size: 3em;
+    text-align: center;
+}
+
+a {
+    color: #9ac;
+}
+
+#answer, #reason {
+    text-align: center;
+    margin: 10px auto;
+}
+
+#answer {
     font-size: 7em;
-    min-width: 2em;
+    width: 2em;
     padding-left: .1em;
     padding-right: .1em;
     border-radius: 50px;
     border: 10px solid gray;
+}
+
+#reason {
+    width: 25em;
 }
 
 .yes {
