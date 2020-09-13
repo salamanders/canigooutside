@@ -1,6 +1,3 @@
-# This file specifies files that are *not* uploaded to Google Cloud Platform
-
-
 
 # Created by https://www.toptal.com/developers/gitignore/api/osx,windows,linux,intellij,python,appengine
 # Edit at https://www.toptal.com/developers/gitignore?templates=osx,windows,linux,intellij,python,appengine
@@ -320,15 +317,4 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/osx,windows,linux,intellij,python,appengine
 
 
-.gcloudignore
-.git
-.gitignore
 .idea
-
-
-# Python pycache:
-__pycache__/
-# Ignored by the build system
-/setup.cfg
-
-README.md
