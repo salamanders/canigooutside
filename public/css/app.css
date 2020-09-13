@@ -1,0 +1,43 @@
+
+.yes, .no, .maybe {
+    font-size: 7em;
+    min-width: 2em;
+    padding-left: .1em;
+    padding-right: .1em;
+    border-radius: 50px;
+    border: 10px solid gray;
+}
+
+.yes {
+    background-color: green;
+}
+
+.no {
+    background-color: red;
+}
+
+.maybe {
+    background-color: blue;
+}
+
+.maybe:after {
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: bottom;
+    -webkit-animation: ellipsis steps(4,end) 900ms infinite;
+    animation: ellipsis steps(4,end) 900ms infinite;
+    content: "\2026"; /* ascii code for the ellipsis character */
+    width: 0;
+}
+
+@keyframes ellipsis {
+    to {
+        width: 1.25em;
+    }
+}
+
+@-webkit-keyframes ellipsis {
+    to {
+        width: 1.25em;
+    }
+}
