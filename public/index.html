@@ -16,13 +16,24 @@
 <div id="page">
     <h1>Can I Go Outside?</h1>
 
-    <div id="answer" class="maybe"></div>
+    <div id="answer" class="maybe loader"></div>
     <div id="reason"></div>
     <!--
     <c class="text-center"><a class="button is-primary">Tell me when I can</a></c>
     -->
 </div>
 
+<dialog id="position-permission">
+    <p>
+        This app requires your location to find the nearest PurpleAir sensors.
+        <div>
+            <button>Allow location</button>
+        </div>
+
+    </p>
+</dialog>
+
+<script src="js/polyfill.js"></script>
 <script src="js/aqi.js"></script>
 <script src="js/interpolate.js"></script>
 <script src="js/app.js"></script>

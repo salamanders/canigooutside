@@ -19,7 +19,7 @@ function triangle_area(vertexA, vertexB, vertexC) {
 // credit: http://stackoverflow.com/a/5752056/1612562
 function list_triples(N) {
     const fn = function (n, src, got, all) {
-        if (n == 0) {
+        if (n === 0) {
             if (got.length > 0) {
                 all[all.length] = got;
             }
@@ -28,7 +28,6 @@ function list_triples(N) {
         for (let j = 0; j < src.length; j++) {
             fn(n - 1, src.slice(j + 1), got.concat([src[j]]), all);
         }
-        return;
     };
 
     const triples = [];
@@ -142,10 +141,10 @@ function distance(lat1, lon1, lat2, lon2, unit = 'K') {
         dist = Math.acos(dist);
         dist = dist * 180 / Math.PI;
         dist = dist * 60 * 1.1515;
-        if (unit == "K") {
+        if (unit === "K") {
             dist = dist * 1.609344
         }
-        if (unit == "N") {
+        if (unit === "N") {
             dist = dist * 0.8684
         }
         return dist;

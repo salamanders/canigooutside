@@ -5,8 +5,9 @@ handlers:
   - url: /
     static_files: public/index.html
     upload: public/index.html
+    secure: always
 
-  # This configures Google App Engine to serve the files in the app's static
-  # directory.
+  # This configures Google App Engine to serve the files in the app's static directory.
   - url: /
     static_dir: public
+    secure: always
