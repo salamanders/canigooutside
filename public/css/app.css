@@ -1,3 +1,7 @@
+* {
+    text-align: center;
+}
+
 body {
     font-family: 'Roboto', sans-serif;
     background-color: black;
@@ -5,13 +9,17 @@ body {
 }
 
 #page {
-    max-width: 500px;
-    margin: auto;
+    width: 400px;
+    margin: 10px auto;
+    border-radius: 10px;
+    background-color: #100;
+    padding: 5px;
+    box-shadow: 0 0 10px #933;
 }
 
 h1 {
-    font-size: 3em;
-    text-align: center;
+    font-size: 2em;
+    margin: 10px;
 }
 
 a {
@@ -21,27 +29,39 @@ a {
 dialog {
     color: white;
     background-color: steelblue;
-    max-width: 20em;
-    border-radius: 1em;
-    text-align: center;
+    max-width: 300px;
+    border-radius: 5px;
 }
 
 #answer, #reason {
-    text-align: center;
     margin: 10px auto;
 }
 
 #answer {
-    font-size: 7em;
-    width: 2em;
-    padding-left: .1em;
-    padding-right: .1em;
-    border-radius: 50px;
-    border: 10px solid gray;
+    width: 300px;
+    /*eight: 100px;*/
+
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 16px;
+    /*border: 10px solid gray;*/
+    font-size: 6em;
+    font-weight: bold;
 }
 
 #reason {
-    width: 25em;
+
+}
+
+.maybe {
+    background-color: #004;
+    animation: color-change 2s infinite;
+}
+
+@keyframes color-change {
+    0% { color: white; }
+    50% { color: #004; }
+    100% { color: white; }
 }
 
 .yes {
@@ -50,8 +70,4 @@ dialog {
 
 .no {
     background-color: red;
-}
-
-.maybe {
-    background-color: blue;
 }

@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7G8HVWT0TD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-7G8HVWT0TD');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -16,7 +25,7 @@
 <div id="page">
     <h1>Can I Go Outside?</h1>
 
-    <div id="answer" class="maybe loader"></div>
+    <div id="answer" class="maybe">...</div>
     <div id="reason"></div>
     <!--
     <c class="text-center"><a class="button is-primary">Tell me when I can</a></c>
@@ -24,13 +33,10 @@
 </div>
 
 <dialog id="position-permission">
-    <p>
-        This app requires your location to find the nearest PurpleAir sensors.
+        This app requires your location to find the nearest PurpleAir sensors.  Please enable and try again.
         <div>
             <button>Allow location</button>
         </div>
-
-    </p>
 </dialog>
 
 <script src="js/polyfill.js"></script>

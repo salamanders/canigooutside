@@ -1,4 +1,4 @@
-/*global console, interpolate, distance */
+/*global console, interpolate, distance, getPosition, normalizeJson, sleep */
 /*global aqiFromPM, getAQIDescription */
 /*jshint esversion: 8 */
 /*jshint unused:true */
@@ -7,11 +7,26 @@
 
 /**
  * @param {string} url
+ * @param {number} retryCount
  * @return {Object}
  */
-const fetchJson = async (url) => {
-    /** @type {Body} */
+const fetchJson = async (url, retryCount = 0) => {
+    /** @type {Response} */
     const response = await fetch(url);
+
+    if ((response.status >= 500 && response.status < 600) || response.status === 429) {
+        console.warn(`fetchJson response: ${response.status}`)
+        if (retryCount < 1) {
+            console.warn('Sleeping then trying again.');
+            await sleep(5 * 1000);
+            return fetchJson(url, retryCount + 1);
+        } else {
+            console.warn(`Too many retries (${retryCount}).`);
+            alert(`PurpleAir may be overloaded, try in 3 minutes.`);
+            throw new Error("HTTP " + response.status);
+        }
+    }
+
     try {
         return await response.clone().json();
     } catch (e) {
@@ -33,26 +48,6 @@ const fetchJson = async (url) => {
 
 
 /**
- * Data compressed into a json.fields/json.data[[]] array
- * @param {string} url
- * @return {Object}
- */
-const fetchJsonArray = async (url) => {
-    const json = await fetchJson(url);
-    if (!json) {
-        throw "Unable to fetch the JSON file, stopping.";
-    }
-    const {fields, data} = json;
-    console.debug(`Fields: ${JSON.stringify(fields)}`);
-    const reducer = (accumulator, currentValue, currentIndex) => {
-        accumulator[fields[currentIndex]] = currentValue;
-        return accumulator;
-    };
-    return data.map(row => row.reduce(reducer, {}));
-};
-
-
-/**
  *
  * @param {number} latitude
  * @param {number} longitude
@@ -67,7 +62,9 @@ const getNearbySensors = async (latitude, longitude, n = 10) => {
 
     if (!sensorsJson || !age || Number(age) < oldestAge) {
         console.debug('Refreshing sensor locations (slow).');
-        const allSensors = await fetchJsonArray('data/data.json'); // mirror of 'https://www.purpleair.com/data.json'
+
+        // mirror of 'https://www.purpleair.com/data.json'
+        const allSensors = normalizeJson(await fetchJson('data/data.json'));
         console.info(`Count of all PurpleAir sensors: ${allSensors.length}`);
         const outsideSensors = allSensors.filter(sensor => sensor.Type === 0 && sensor.pm_1 > 0);
         console.info(`Count of outside sensors with pm_1: ${outsideSensors.length}`);
@@ -97,7 +94,7 @@ const getNearbySensors = async (latitude, longitude, n = 10) => {
     console.log('nearbyIds', nearbyIds);
 
     /** @type {Object[]} */
-    const nearbySensors = await fetchJsonArray('https://www.purpleair.com/data.json?show=' + nearbyIds.join("|"));
+    const nearbySensors = normalizeJson(await fetchJson('https://www.purpleair.com/data.json?show=' + nearbyIds.join("|")));
 
     // Sort by distance and slice
     nearbySensors.forEach(sensor => {
@@ -114,8 +111,6 @@ const getNearbySensors = async (latitude, longitude, n = 10) => {
  * @param {Object[]} nearbys
  */
 const nearbyToAnswer = (latitude, longitude, nearbys) => {
-    const answer = document.getElementById('answer');
-    const reason = document.getElementById('reason');
     const nearestSensor = nearbys[0];
     console.log('nearestSensor', nearestSensor);
     const nearestPM25 = Number(nearestSensor.pm_1);
@@ -134,8 +129,17 @@ const nearbyToAnswer = (latitude, longitude, nearbys) => {
         data
     );
     console.log(`i=Interpolated PM2.5=${interpPM25}`);
+    const distKm = nearestSensor.distance.toFixed(1);
 
-    const worstPm = Math.max(interpPM25, nearestPM25);
+    display(distKm, interpPM25, nearestPM25);
+};
+
+const display = (distKm, ...pm25s) => {
+    const answer = document.getElementById('answer');
+    const reason = document.getElementById('reason');
+
+    const bestPm = Math.min(...pm25s);
+    const worstPm = Math.max(...pm25s);
     const aqi = aqiFromPM(worstPm);
     const [aqiName, aqiDesc] = getAQIDescription(aqi);
 
@@ -148,12 +152,12 @@ const nearbyToAnswer = (latitude, longitude, nearbys) => {
         answer.classList.add('no');
         answer.textContent = 'No';
     }
-    const distKm = nearestSensor.distance.toFixed(1);
-    reason.innerHTML = `<a href="https://purpleair.com">PurpleAir</a> sensors (~${distKm}km away)<br>
+
+    reason.innerHTML = `<a href="http://purpleair.com">PurpleAir</a> sensors (~${distKm}km away)<br>
 say the Air Quality Index is<br>
 ${aqi} (${aqiName})<br>
 <small>
-  (pm2.5 is between ${Math.round(interpPM25)} and ${Math.round(nearestPM25)})<br>
+  (pm2.5 is between ${Math.round(bestPm)} and ${Math.round(worstPm)})<br>
   <i>${aqiDesc}</i>
 </small>`;
 };
@@ -167,11 +171,9 @@ const main = async () => {
     nearbyToAnswer(latitude, longitude, nearbys);
 };
 
-
 main().then(() => {
     console.info('Script completed.');
 }).catch(e => {
     console.warn(e);
     alert(`Drat, something broke.  Please tell Benjamin that '${e.message}'`);
 });
-
