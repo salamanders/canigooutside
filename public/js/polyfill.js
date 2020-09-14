@@ -3,19 +3,46 @@
 /*jshint unused:true */
 /*jshint strict:implied */
 /*jshint -W097 */
-/*exported getPosition, normalizeJson, sleep */
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+/*exported getPosition, normalizeJson, sleep, requireNumber */
+
+
+/**
+ *
+ * @param {null|number} val
+ * @param {null|number=} min
+ * @param {null|number=} max
+ */
+function requireNumber(val, min = null, max = null) {
+    if (val === undefined || val === null || typeof val !== 'number' || isNaN(val)) {
+        throw new Error('Invalid number: ' + val);
+    }
+    if (min !== null && val < min) {
+        throw new Error(`Number out of range: ${val}<${min}`);
+    }
+    if (max !== null && val > max) {
+        throw new Error(`Number out of range: ${val}>${max}`);
+    }
 }
 
 /**
  *
- * @return {Promise<GeolocationPosition>}
+ * @param {number} ms
+ * @return {Promise<*>}
  */
-const getPosition = async (modalId='position-permission') => {
-    return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, (positionError)=>{
+function sleep(ms) {
+    requireNumber(ms, 0);
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+/**
+ *
+ * @return {Promise<*>}
+ */
+const getPosition = async (modalId = 'position-permission') => {
+    return new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(resolve, (positionError) => {
             console.warn(`Issue getting position, displaying modal.`, positionError);
             document.getElementById(modalId).showModal();
             // Never resolves or rejects, which is ok.
@@ -27,11 +54,11 @@ const getPosition = async (modalId='position-permission') => {
 /**
  * Data compressed into a json.fields/json.data[[]] array
  * @param {Object} json - un-normalized JSON
- * @param {string} fieldsKey
- * @param {string} dataKey
+ * @param {string=} fieldsKey
+ * @param {string=} dataKey
  * @return {Object}
  */
-const normalizeJson =  (json, fieldsKey='fields', dataKey='data') => {
+const normalizeJson = (json, fieldsKey = 'fields', dataKey = 'data') => {
     const fields = json[fieldsKey];
     const data = json[dataKey];
     console.debug(`Fields: ${JSON.stringify(fields)}`);

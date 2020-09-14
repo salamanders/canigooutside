@@ -1,4 +1,4 @@
-/*global console, interpolate, distance, getPosition, normalizeJson, sleep */
+/*global console, interpolate, distance, getPosition, normalizeJson, sleep, requireNumber */
 /*global aqiFromPM, getAQIDescription */
 /*jshint esversion: 8 */
 /*jshint unused:true */
@@ -7,7 +7,7 @@
 
 /**
  * @param {string} url
- * @param {number} retryCount
+ * @param {number=} retryCount
  * @return {Object}
  */
 const fetchJson = async (url, retryCount = 0) => {
@@ -15,7 +15,7 @@ const fetchJson = async (url, retryCount = 0) => {
     const response = await fetch(url);
 
     if ((response.status >= 500 && response.status < 600) || response.status === 429) {
-        console.warn(`fetchJson response: ${response.status}`)
+        console.warn(`fetchJson response: ${response.status}`);
         if (retryCount < 1) {
             console.warn('Sleeping then trying again.');
             await sleep(5 * 1000);
@@ -51,10 +51,14 @@ const fetchJson = async (url, retryCount = 0) => {
  *
  * @param {number} latitude
  * @param {number} longitude
- * @param {number} n
+ * @param {number=} n
  * @return {Promise<Object[]>}
  */
 const getNearbySensors = async (latitude, longitude, n = 10) => {
+    requireNumber(latitude);
+    requireNumber(longitude);
+    requireNumber(n, 1, 100);
+
     const myStorage = window.localStorage;
     let sensorsJson = myStorage.getItem('sensors');
     const age = myStorage.getItem('age');
@@ -111,6 +115,10 @@ const getNearbySensors = async (latitude, longitude, n = 10) => {
  * @param {Object[]} nearbys
  */
 const nearbyToAnswer = (latitude, longitude, nearbys) => {
+    requireNumber(latitude);
+    requireNumber(longitude);
+    requireNumber(nearbys.length, 1);
+
     const nearestSensor = nearbys[0];
     console.log('nearestSensor', nearestSensor);
     const nearestPM25 = Number(nearestSensor.pm_1);
@@ -129,12 +137,19 @@ const nearbyToAnswer = (latitude, longitude, nearbys) => {
         data
     );
     console.log(`i=Interpolated PM2.5=${interpPM25}`);
-    const distKm = nearestSensor.distance.toFixed(1);
 
-    display(distKm, interpPM25, nearestPM25);
+    display(nearestSensor.distance, interpPM25, nearestPM25);
 };
 
+/**
+ *
+ * @param {number} distKm
+ * @param {number} pm25s
+ */
 const display = (distKm, ...pm25s) => {
+    requireNumber(distKm);
+    requireNumber(pm25s.length, 1);
+
     const answer = document.getElementById('answer');
     const reason = document.getElementById('reason');
 
@@ -153,11 +168,15 @@ const display = (distKm, ...pm25s) => {
         answer.textContent = 'No';
     }
 
-    reason.innerHTML = `<a href="http://purpleair.com">PurpleAir</a> sensors (~${distKm}km away)<br>
+    const range = (Math.round(bestPm) === Math.round(worstPm)) ?
+        `~${bestPm}` :
+        ` in ${bestPm} to ${worstPm}`;
+
+    reason.innerHTML = `<a href="http://purpleair.com">PurpleAir</a> sensors (~${distKm.toFixed(1)}km away)<br>
 say the Air Quality Index is<br>
 ${aqi} (${aqiName})<br>
 <small>
-  (pm2.5 is between ${Math.round(bestPm)} and ${Math.round(worstPm)})<br>
+  (pm2.5 is ${range})<br>
   <i>${aqiDesc}</i>
 </small>`;
 };
