@@ -35,7 +35,7 @@ const fetchJson = async (url, retryCount = 0) => {
         /** @type {string} */
         const rawText = await response.text();
         /** @type {string} */
-        const fixedText = rawText.replace('data":[]', 'data":[');
+        const fixedText = rawText.replace('"data":[],', '"data":[');
         try {
             return JSON.parse(fixedText);
         } catch (e) {
