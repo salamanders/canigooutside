@@ -39,6 +39,7 @@ function aqiFromPM(pm) {
     } else if (pm >= 0) {
         return calcAQI(pm, 50, 0, 12, 0);
     }
+    throw RangeError(`Something went wrong, pm='${pm}'`);
 }
 
 /**
@@ -51,8 +52,7 @@ function aqiFromPM(pm) {
  * @return {number}
  */
 function calcAQI(Cp, Ih, Il, BPh, BPl) {
-    [...arguments].forEach(arg=>requireNumber(arg));
-
+    [Cp, Ih, Il, BPh, BPl].forEach(arg => requireNumber(arg));
     const a = (Ih - Il);
     const b = (BPh - BPl);
     const c = (Cp - BPl);
@@ -81,5 +81,5 @@ function getAQIDescription(aqi) {
     } else if (aqi >= 0) {
         return ['Good', '0-50: Air quality is considered satisfactory, and air pollution poses little or no risk'];
     }
-    throw Error(`Something went wrong, aqi='${aqi}'`);
+    throw RangeError(`Something went wrong, aqi='${aqi}'`);
 }

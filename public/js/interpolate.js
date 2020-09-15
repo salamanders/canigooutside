@@ -1,8 +1,7 @@
-/*global console */
+/*global console, requireNumber */
 /*jshint esversion: 8 */
 /*jshint unused:true */
 /*jshint strict:implied */
-
 /*exported interpolate, distance */
 /*jshint -W097 */
 
@@ -126,8 +125,28 @@ function interpolate(newPoint, data) {
 //:::                                                                         :::
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+/**
+ *
+ * @param {number} lat1
+ * @param {number} lon1
+ * @param {number} lat2
+ * @param {number} lon2
+ * @param {string=} unit
+ * @return {number}
+ */
 function distance(lat1, lon1, lat2, lon2, unit = 'K') {
-    if ((lat1 == lat2) && (lon1 == lon2)) {
+    try {
+        requireNumber(lat1, -90, 90);
+        requireNumber(lon1, -180, 180);
+        requireNumber(lat2, -90, 90);
+        requireNumber(lon2, -180, 180);
+    } catch (e) {
+        console.warn(`failed call to distance(${lat1}, ${lon1}, ${lat2}, ${lon2})`);
+        return Number.MAX_SAFE_INTEGER;
+    }
+
+
+    if ((lat1 === lat2) && (lon1 === lon2)) {
         return 0;
     } else {
         const radlat1 = Math.PI * lat1 / 180;

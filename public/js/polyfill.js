@@ -15,13 +15,13 @@
  */
 function requireNumber(val, min = null, max = null) {
     if (val === undefined || val === null || typeof val !== 'number' || isNaN(val)) {
-        throw new Error('Invalid number: ' + val);
+        throw new RangeError('Invalid number: ' + val);
     }
     if (min !== null && val < min) {
-        throw new Error(`Number out of range: ${val}<${min}`);
+        throw new RangeError(`Number out of range: ${val}<${min}`);
     }
     if (max !== null && val > max) {
-        throw new Error(`Number out of range: ${val}>${max}`);
+        throw new RangeError(`Number out of range: ${val}>${max}`);
     }
 }
 

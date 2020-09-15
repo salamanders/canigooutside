@@ -21,27 +21,30 @@ const fetchJson = async (url, retryCount = 0) => {
             await sleep(5 * 1000);
             return fetchJson(url, retryCount + 1);
         } else {
-            console.warn(`Too many retries (${retryCount}).`);
+            console.error(`Too many retries (${retryCount}).`);
             alert(`PurpleAir may be overloaded, try in 3 minutes.`);
             throw new Error("HTTP " + response.status);
         }
     }
 
     try {
+        // Clone so we can try again if there is a problem.
         return await response.clone().json();
     } catch (e) {
         console.warn("Problem parsing json.  Trying hack to fix.");
         console.warn(e);
         /** @type {string} */
-        const rawText = await response.text();
+        const rawText = await response.clone().text();
         /** @type {string} */
         const fixedText = rawText.replace('"data":[],', '"data":[');
         try {
-            return JSON.parse(fixedText);
+            const fixedJson = JSON.parse(fixedText);
+            console.info('Hack worked!');
+            return fixedJson;
         } catch (e) {
-            console.warn("Hack failed.");
+            console.error("Hack failed.");
             console.debug(rawText);
-            throw "Unable to parse purpleair JSON.";
+            throw "Unable to parse PurpleAir JSON.";
         }
     }
 };
@@ -169,8 +172,8 @@ const display = (distKm, ...pm25s) => {
     }
 
     const range = (Math.round(bestPm) === Math.round(worstPm)) ?
-        `~${bestPm}` :
-        ` in ${bestPm} to ${worstPm}`;
+        `~${Math.round(bestPm)}` :
+        ` in ${Math.round(bestPm)} to ${Math.round(worstPm)}`;
 
     reason.innerHTML = `<a href="http://purpleair.com">PurpleAir</a> sensors (~${distKm.toFixed(1)}km away)<br>
 say the Air Quality Index is<br>
@@ -189,6 +192,7 @@ const main = async () => {
     const nearbys = await getNearbySensors(latitude, longitude);
     nearbyToAnswer(latitude, longitude, nearbys);
 };
+
 
 main().then(() => {
     console.info('Script completed.');
