@@ -68,7 +68,7 @@ const getNearbySensors = async (latitude, longitude, n = 10) => {
     const oldestAge = (new Date()).getTime() - (1000 * 60 * 60 * 24 * 7); // 1 week
 
     if (!sensorsJson || !age || Number(age) < oldestAge) {
-        console.debug('Refreshing sensor locations (slow).');
+        console.debug('Refreshing sensor locations from static copy of full API results.');
 
         // mirror of 'https://www.purpleair.com/data.json'
         const allSensors = normalizeJson(await fetchJson('data/data.json'));
@@ -84,7 +84,6 @@ const getNearbySensors = async (latitude, longitude, n = 10) => {
         }));
         myStorage.setItem('sensors', sensorsJson);
         myStorage.setItem('age', (new Date()).getTime().toString());
-        // nearbySensors = allSensors; // Preload the result, so we don't call twice and get rate-limited.
     } else {
         console.debug('Loaded sensor locations from localStorage cache.');
     }
@@ -127,21 +126,28 @@ const nearbyToAnswer = (latitude, longitude, nearbys) => {
     const nearestPM25 = Number(nearestSensor.pm_1);
     console.log(`nearestSensor PM2.5=${nearestPM25}`);
 
-    // interpolate
-    const data = nearbys.map(sensor => {
-        return {
-            'x': sensor.Lon,
-            'y': sensor.Lat,
-            'v': Number(sensor.pm_1)
-        };
-    });
-    const interpPM25 = interpolate(
-        {'x': longitude, 'y': latitude},
-        data
-    );
-    console.log(`i=Interpolated PM2.5=${interpPM25}`);
+    // interpolate to find averaged quality
+    /** @type {?number} */
+    let interpPM25 = null;
+    try {
+        const data = nearbys.map(sensor => {
+            return {
+                'x': sensor.Lon,
+                'y': sensor.Lat,
+                'v': Number(sensor.pm_1)
+            };
+        });
+        interpPM25 = interpolate(
+            {'x': longitude, 'y': latitude},
+            data
+        );
+        console.log(`i=Interpolated PM2.5=${interpPM25}`);
+    } catch(e) {
+        console.warn('Problem in interpolation.');
+        console.warn(e);
+    }
 
-    display(nearestSensor.distance, interpPM25, nearestPM25);
+    display(nearestSensor.distance, nearestPM25, interpPM25);
 };
 
 /**
@@ -151,13 +157,14 @@ const nearbyToAnswer = (latitude, longitude, nearbys) => {
  */
 const display = (distKm, ...pm25s) => {
     requireNumber(distKm);
-    requireNumber(pm25s.length, 1);
+    const validPm25s = pm25s.filter(Number);
+    requireNumber(validPm25s.length, 1);
 
     const answer = document.getElementById('answer');
     const reason = document.getElementById('reason');
 
-    const bestPm = Math.min(...pm25s);
-    const worstPm = Math.max(...pm25s);
+    const bestPm = Math.min(...validPm25s);
+    const worstPm = Math.max(...validPm25s);
     const aqi = aqiFromPM(worstPm);
     const [aqiName, aqiDesc] = getAQIDescription(aqi);
 
@@ -198,5 +205,5 @@ main().then(() => {
     console.info('Script completed.');
 }).catch(e => {
     console.warn(e);
-    alert(`Drat, something broke.  Please tell Benjamin that '${e.message}'`);
+    alert(`Drat, something broke.  Please try again in 5 minutes.  Tell Benjamin if it keeps happening.`);
 });
