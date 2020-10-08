@@ -5,8 +5,9 @@
     pip3 install flask
     python3 main.py
      
-    gcloud config set project canigooutside
-    gcloud app deploy --quiet
+    gcloud auth login
+    # gcloud config set project canigooutside
+    gcloud app deploy --quiet --project=canigooutside
     
 # TODO
 

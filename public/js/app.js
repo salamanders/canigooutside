@@ -43,6 +43,7 @@ const fetchJson = async (url, retryCount = 0) => {
             return fixedJson;
         } catch (e) {
             console.error("Hack failed.");
+            console.debug(url);
             console.debug(rawText);
             throw "Unable to parse PurpleAir JSON.";
         }

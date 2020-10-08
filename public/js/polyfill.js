@@ -4,7 +4,27 @@
 /*jshint strict:implied */
 /*jshint -W097 */
 
-/*exported getPosition, normalizeJson, sleep, requireNumber */
+/*exported getPosition, normalizeJson, sleep, requireNumber, blockUntilDOMReady */
+
+/** Block on document being fully ready, makes it safe to run scripts any time. */
+async function blockUntilDOMReady() {
+    console.time('blockUntilDOMReady');
+    return new Promise(resolve => {
+        if (document.readyState === 'complete') {
+            console.timeEnd('blockUntilDOMReady');
+            resolve();
+            return;
+        }
+        const onReady = () => {
+            document.removeEventListener('DOMContentLoaded', onReady, true);
+            window.removeEventListener('load', onReady, true);
+            console.timeEnd('blockUntilDOMReady');
+            resolve();
+        };
+        document.addEventListener('DOMContentLoaded', onReady, true);
+        window.addEventListener('load', onReady, true);
+    });
+}
 
 
 /**
